@@ -1,8 +1,6 @@
 # -*- coding: utf-8
 
 import boto3
-import base64
-import json
 import os
 import logging
 import secrets

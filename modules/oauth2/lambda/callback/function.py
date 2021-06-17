@@ -1,12 +1,12 @@
 # -*- coding: utf-8
 
 import boto3
-import base64
 import json
 import os
 import logging
 from http.cookies import SimpleCookie
 from authlib.integrations.requests_client import OAuth2Session
+from accept_types import get_best_match
 
 logger = logging.getLogger()
 COOKIE_TOKEN_KEY = '_oauth2_token'
@@ -54,18 +54,41 @@ def lambda_handler(event, context):
         access_token = token['access_token']
 
         table.delete_item(Key={'pk': federation_id})
+        accept_header = event['headers'].get('accept')
 
-        return {
-            'isBase64Encoded': False,
-            'statusCode': 200,
-            'body': json.dumps(token),
-            'cookies': [
-                f'{COOKIE_TOKEN_KEY}={access_token}; Secure; HttpOnly; SameSite=Strict; Path=/'                
-            ],
-            'headers': {
-                'content-type': 'application/json'
+        return_type = get_best_match(accept_header, ['text/html', 'application/json'])
+
+        if return_type == 'text/html':
+            # for browser
+            return {
+                'isBase64Encoded': False,
+                'statusCode': 200,
+                'body': '''
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+   <meta http-equiv="refresh" content="0;URL=/" />
+  </head>
+  <body />
+</html>
+''',
+                'cookies': [
+                    f'{COOKIE_TOKEN_KEY}={access_token}; Secure; HttpOnly; SameSite=Strict; Path=/'                
+                ],
+                'headers': {
+                    'content-type': 'text/html',
+                    'location': '/'
+                }
             }
-        }
+        else:
+            # for application
+            return {
+                'isBase64Encoded': False,
+                'statusCode': 200,
+                'body': json.dumps(token),
+                'headers': {
+                    'content-type': 'application/json'
+                }
+            }
 
     except Exception as e:
         import traceback

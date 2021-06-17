@@ -8,6 +8,7 @@ authors = ["Your Name <you@example.com>"]
 python = "^3.8"
 Authlib = {extras = ["requests"], version = "^0.15.4"}
 requests = "^2.25.1"
+accept-types = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 

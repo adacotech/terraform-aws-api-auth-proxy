@@ -1,8 +1,6 @@
 # -*- coding: utf-8
 
 import boto3
-import base64
-import json
 import os
 import logging
 from authlib.jose import jwt
@@ -67,13 +65,6 @@ def lambda_handler(event, _context):
                 raise Exception('enough scope')
         return {
             'isAuthorized': True
-        }
-        
-        return {
-            'isAuthorized': True,
-            'context': {
-                'cookie': f'{COOKIE_TOKEN_KEY}={token}; Secure; HttpOnly; SameSite=Strict; Path=/'
-            }
         }
     except Exception as e:
         import traceback

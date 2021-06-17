@@ -83,8 +83,8 @@ resource "aws_apigatewayv2_authorizer" "oauth2" {
   authorizer_payload_format_version = "2.0"
   enable_simple_responses           = true
   authorizer_result_ttl_in_seconds  = 0
-  # identity_sources                  = ["$request.header.authorization"]
-  name = "${var.unique_name}-authorizer"
+  identity_sources                  = []
+  name                              = "${var.unique_name}-authorizer"
 }
 
 resource "null_resource" "authorize_build" {
