@@ -161,11 +161,11 @@ resource "aws_lambda_function" "authorizer" {
   source_code_hash = data.archive_file.authorizer.output_base64sha256
   environment {
     variables = {
-      OAUTH2_ISSUER    = var.oauth2_issuer
-      OAUTH2_SCOPE     = var.oauth2_scope
-      OAUTH2_AUDIENCE  = var.oauth2_audience
-      DYNAMODB_TABLE_NAME   = aws_dynamodb_table.authorize.name
-      COOKIE_TOKEN_KEY = local.cookie_token_key
+      OAUTH2_ISSUER       = var.oauth2_issuer
+      OAUTH2_SCOPE        = var.oauth2_scope
+      OAUTH2_AUDIENCE     = var.oauth2_audience
+      DYNAMODB_TABLE_NAME = aws_dynamodb_table.authorize.name
+      COOKIE_TOKEN_KEY    = local.cookie_token_key
     }
   }
 }

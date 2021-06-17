@@ -25,9 +25,9 @@ variable "vpc_id" {
   description = "AWS VPC to deploy this"
 }
 
-variable "load_balancer_listener_arn" {
+variable "integration_uri" {
   type        = string
-  description = "load balancer arn"
+  description = "What this proxy integrate to (e.g. load_balancer_listener_arn)"
 }
 
 variable "service_subnet_ids" {
