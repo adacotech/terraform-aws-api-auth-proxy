@@ -8,7 +8,7 @@ from http.cookies import SimpleCookie
 import requests
 
 logger = logging.getLogger()
-COOKIE_TOKEN_KEY = '_oauth2_token'
+COOKIE_TOKEN_KEY = os.environ['COOKIE_TOKEN_KEY']
 
 def get_authorization_token(event) -> str:
     cookie = SimpleCookie()

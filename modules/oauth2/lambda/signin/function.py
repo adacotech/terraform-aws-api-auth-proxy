@@ -8,6 +8,7 @@ import time
 from authlib.integrations.requests_client import OAuth2Session
 
 logger = logging.getLogger()
+COOKIE_FEDERATION_KEY = os.environ['COOKIE_FEDERATION_KEY']
 
 def lambda_handler(event, context):
     issuer = os.environ['OAUTH2_ISSUER']
@@ -47,7 +48,7 @@ def lambda_handler(event, context):
     return {
         "statusCode": 302,
         "cookies": [
-            f'federation_id={federation_id}; Secure; HttpOnly; SameSite=Lax; Path=/'
+            f'{COOKIE_FEDERATION_KEY}={federation_id}; Secure; HttpOnly; SameSite=Lax; Path=/'
         ],
         "headers": {
             "Location": target_uri

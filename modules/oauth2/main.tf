@@ -161,9 +161,10 @@ resource "aws_lambda_function" "authorizer" {
   source_code_hash = data.archive_file.authorizer.output_base64sha256
   environment {
     variables = {
-      OAUTH2_ISSUER   = var.oauth2_issuer
-      OAUTH2_SCOPE    = var.oauth2_scope
-      OAUTH2_AUDIENCE = var.oauth2_audience
+      OAUTH2_ISSUER    = var.oauth2_issuer
+      OAUTH2_SCOPE     = var.oauth2_scope
+      OAUTH2_AUDIENCE  = var.oauth2_audience
+      COOKIE_TOKEN_KEY = local.cookie_token_key
     }
   }
 }
@@ -184,6 +185,7 @@ resource "aws_lambda_function" "signin" {
       OAUTH2_AUTHORIZATION_ENDPOINT = local.oauth2_authorization_endpoint
       DYNAMODB_TABLE_NAME           = aws_dynamodb_table.authorize.name
       REDIRECT_URI                  = "${var.base_uri}/api_authorize/callback"
+      COOKIE_FEDERATION_KEY         = local.cookie_federation_key
     }
   }
 }
@@ -203,6 +205,8 @@ resource "aws_lambda_function" "callback" {
       OAUTH2_TOKEN_ENDPOINT = local.oauth2_token_endpoint
       DYNAMODB_TABLE_NAME   = aws_dynamodb_table.authorize.name
       REDIRECT_URI          = "${var.base_uri}/api_authorize/callback"
+      COOKIE_TOKEN_KEY      = local.cookie_token_key
+      COOKIE_FEDERATION_KEY = local.cookie_federation_key
     }
   }
 }

@@ -9,14 +9,15 @@ from authlib.integrations.requests_client import OAuth2Session
 from accept_types import get_best_match
 
 logger = logging.getLogger()
-COOKIE_TOKEN_KEY = '_oauth2_token'
+COOKIE_FEDERATION_KEY = os.environ['COOKIE_FEDERATION_KEY']
+COOKIE_TOKEN_KEY = os.environ['COOKIE_TOKEN_KEY']
 
 def get_federation_id(event) -> str:
     cookie = SimpleCookie()
 
     cookie.load(', '.join(event['cookies']))
-    if 'federation_id' in cookie:
-        return cookie['federation_id'].value
+    if COOKIE_FEDERATION_KEY in cookie:
+        return cookie[COOKIE_FEDERATION_KEY].value
     else:
         return ''
 
@@ -73,7 +74,7 @@ def lambda_handler(event, context):
 ''',
                 'cookies': [
                     f'{COOKIE_TOKEN_KEY}={access_token}; Secure; HttpOnly; SameSite=Strict; Path=/',
-                    'federation_id=; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'
+                    f'{COOKIE_FEDERATION_KEY}=; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'
                 ],
                 'headers': {
                     'content-type': 'text/html',
@@ -90,7 +91,7 @@ def lambda_handler(event, context):
                     'content-type': 'application/json'
                 },
                 'cookies': [
-                    'federation_id=; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'
+                    f'{COOKIE_FEDERATION_KEY}=; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'
                 ]
             }
 
