@@ -1,11 +1,13 @@
 # -*- coding: utf-8
 
 import boto3
+import json
 import os
 import logging
 from authlib.jose import jwt
 from http.cookies import SimpleCookie
 import requests
+import time
 
 logger = logging.getLogger()
 COOKIE_TOKEN_KEY = os.environ['COOKIE_TOKEN_KEY']
@@ -29,12 +31,33 @@ def lambda_handler(event, _context):
     audience = os.environ.get('OAUTH2_AUDIENCE')
     required_scopes = set(os.environ.get('OAUTH2_SCOPE', '').split(' '))
     try:
+        tablename = os.environ['DYNAMODB_TABLE_NAME']
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table(tablename)
         logger.warn(event)
         token = get_authorization_token(event)
         logger.warn(token)
 
-        # public key from jwk
-        jwks = requests.get('{}.well-known/jwks.json'.format(issuer)).json()
+        # public key from dynamodb
+        res = table.get_item(Key={
+            'pk': issuer
+        },
+        AttributesToGet=['jwks'])
+        jwks = None
+
+        if 'Item' in res:
+            jwks = json.loads(res['Item']['jwks'])
+        else:
+            # public key from jwk
+            jwks = requests.get('{}.well-known/jwks.json'.format(issuer)).json()
+            # put to dynamodb
+            ttl = int(time.time()) + 600
+            
+            table.put_item(Item={
+                'pk': issuer,
+                'jwks': json.dumps(jwks),
+                'ttl': ttl
+            })
 
         audiences = [issuer]
 

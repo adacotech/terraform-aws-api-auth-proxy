@@ -164,6 +164,7 @@ resource "aws_lambda_function" "authorizer" {
       OAUTH2_ISSUER    = var.oauth2_issuer
       OAUTH2_SCOPE     = var.oauth2_scope
       OAUTH2_AUDIENCE  = var.oauth2_audience
+      DYNAMODB_TABLE_NAME   = aws_dynamodb_table.authorize.name
       COOKIE_TOKEN_KEY = local.cookie_token_key
     }
   }
