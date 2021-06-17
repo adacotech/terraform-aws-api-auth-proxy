@@ -72,7 +72,8 @@ def lambda_handler(event, context):
 </html>
 ''',
                 'cookies': [
-                    f'{COOKIE_TOKEN_KEY}={access_token}; Secure; HttpOnly; SameSite=Strict; Path=/'                
+                    f'{COOKIE_TOKEN_KEY}={access_token}; Secure; HttpOnly; SameSite=Strict; Path=/',
+                    'federation_id=; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'
                 ],
                 'headers': {
                     'content-type': 'text/html',
@@ -87,7 +88,10 @@ def lambda_handler(event, context):
                 'body': json.dumps(token),
                 'headers': {
                     'content-type': 'application/json'
-                }
+                },
+                'cookies': [
+                    'federation_id=; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'
+                ]
             }
 
     except Exception as e:
