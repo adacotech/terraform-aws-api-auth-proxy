@@ -1,6 +1,6 @@
 variable "unique_name" {
   type        = string
-  description = "A unique name for this application (e.g. mlflow-team-name)"
+  description = "A unique name for this application (e.g. team-name)"
 }
 
 variable "main_zone_id" {

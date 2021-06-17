@@ -22,7 +22,7 @@ variable "tags" {
 
 variable "vpc_id" {
   type        = string
-  description = "AWS VPC to deploy MLflow into"
+  description = "AWS VPC to deploy this"
 }
 
 variable "load_balancer_listener_arn" {
