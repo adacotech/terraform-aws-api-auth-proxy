@@ -1,24 +1,20 @@
 # terraform-aws-api-auth-proxy
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-A terraform module to api authorization via OAuth2 Authorization Code Flow using API Gateway and Lambda
-
+A terraform module to api authorization via OAuth2 Authorization Code Flow using API Gateway and Lambda Authorizer.
 
 ## Features
 
-When designing this module, we've made some decisions about technologies and configuration that might not apply to all use cases. In doing so, we've applied the following principles, in this order:
+- Low cost
+This module is implemented on a serverless architecture, resulting in infinitely low operational costs.
 
-- __High availability and recovery__. All components are meant to be highly available and provide backups so that important data can be recovered in case of a failure. Database back-ups are activated, and versioning is enabled for the S3 bucket.
-- __Least privilege__. We've created dedicated security groups and IAM roles, and restricted traffic/permissions to the minimum necessary to run MLflow.
-- __Smallest maintenance overhead__. We've chosen serverless technologies like Fargate and Aurora Serverless to minimize the cost of ownership of an MLflow cluster.
-- __Smallest cost overhead__. We've tried to choose technologies that minimize costs, under the assumption that MLflow will be an internal tool that is used during working hours, and with a very lightweight use of the database.
-- __Private by default__. As of version 1.9.1, MLflow doesn't provide native authentication/authorization mechanisms. When using the default values, the module will create resources that are not exposed to the Internet. Moreover, the module provides server-side encryption for the S3 bucket and the database through different KMS keys.
-- __Flexibility__. Where possible, we've tried to make this module usable under different circumstances. For instance, you can use it to deploy MLflow to a private VPN and access it within a VPN, or you can leverage ALB's integration with Cognito/OIDC to allow users to access MLflow from your SSO solution.
+- High security
+Designed based on the OAuth2 Authorization Code Flow with PKCE, this module does not store credentials. This allows access to internal servers while maintaining a high level of security.
 
+- Flexibility
+By using the private integration of API Gateway, authorization processing is added to various targets such as ALB and lambda. It is ideal for applications that grant OAuth2 authorization to internal servers that do not have an authentication.
 
 ## Usage
-
-To use this module, you can simply:
 
 ```hcl
 module "api_authorizer" {
