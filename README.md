@@ -17,9 +17,9 @@ By using the private integration of API Gateway, authorization processing is add
 ## Usage
 
 ```hcl
-module "api_authorizer" {
-  source  = ""
-  version = "0.1.0"
+module "api-auth-proxy" {
+  source  = "adacotech/api-auth-proxy/aws"
+  version = "0.1.2"
 
   unique_name                       = "unique-name"
   subdomain_name                    = "subdomain"
