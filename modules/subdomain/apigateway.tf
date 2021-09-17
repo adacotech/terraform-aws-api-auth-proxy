@@ -6,5 +6,9 @@ resource "aws_apigatewayv2_domain_name" "subdomain" {
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }
+
+  depends_on = [
+    aws_route53_record.main_cert_validation
+  ]
 }
 
