@@ -111,18 +111,6 @@ resource "null_resource" "signin_build" {
   }
 }
 
-resource "null_resource" "callback_build" {
-  triggers = {
-    src         = filesha256("${path.module}/lambda/callback/function.py")
-    docker_file = filesha256("${path.module}/lambda/Dockerfile")
-    script      = filesha256("${path.module}/lambda/build.sh")
-    dependency  = filesha256("${path.module}/lambda/callback/requirements.txt")
-  }
-  provisioner "local-exec" {
-    command = "${path.module}/lambda/build.sh api-auth-callback ${path.module}/lambda/callback ${abspath(path.module)}/lambda"
-  }
-}
-
 data "archive_file" "authorizer" {
   type        = "zip"
   source_dir  = "${path.module}/lambda/dst/api-auth-authorizer"
@@ -140,16 +128,6 @@ data "archive_file" "signin" {
     null_resource.signin_build
   ]
 }
-
-data "archive_file" "callback" {
-  type        = "zip"
-  source_dir  = "${path.module}/lambda/dst/api-auth-callback"
-  output_path = "${path.module}/callback.zip"
-  depends_on = [
-    null_resource.callback_build
-  ]
-}
-
 
 /* lambda function */
 resource "aws_lambda_function" "authorizer" {
@@ -183,31 +161,12 @@ resource "aws_lambda_function" "signin" {
       OAUTH2_SCOPE                  = var.oauth2_scope
       OAUTH2_AUDIENCE               = var.oauth2_audience
       OAUTH2_CLIENT_ID              = var.oauth2_client_id
+      OAUTH2_TOKEN_ENDPOINT         = local.oauth2_token_endpoint
       OAUTH2_AUTHORIZATION_ENDPOINT = local.oauth2_authorization_endpoint
       DYNAMODB_TABLE_NAME           = aws_dynamodb_table.authorize.name
       REDIRECT_URI                  = "${var.base_uri}/api_authorize/callback"
+      COOKIE_TOKEN_KEY              = local.cookie_token_key
       COOKIE_FEDERATION_KEY         = local.cookie_federation_key
-    }
-  }
-}
-
-resource "aws_lambda_function" "callback" {
-  filename         = data.archive_file.callback.output_path
-  function_name    = "${var.unique_name}-authorize-callback"
-  role             = aws_iam_role.iam_for_lambda.arn
-  handler          = "function.lambda_handler"
-  runtime          = "python3.8"
-  source_code_hash = data.archive_file.callback.output_base64sha256
-  environment {
-    variables = {
-      OAUTH2_ISSUER         = var.oauth2_issuer
-      OAUTH2_SCOPE          = var.oauth2_scope
-      OAUTH2_CLIENT_ID      = var.oauth2_client_id
-      OAUTH2_TOKEN_ENDPOINT = local.oauth2_token_endpoint
-      DYNAMODB_TABLE_NAME   = aws_dynamodb_table.authorize.name
-      REDIRECT_URI          = "${var.base_uri}/api_authorize/callback"
-      COOKIE_TOKEN_KEY      = local.cookie_token_key
-      COOKIE_FEDERATION_KEY = local.cookie_federation_key
     }
   }
 }
@@ -224,9 +183,18 @@ resource "aws_apigatewayv2_route" "signin" {
 resource "aws_apigatewayv2_route" "callback" {
   api_id             = var.api_id
   operation_name     = "ConnectRoute"
-  target             = "integrations/${aws_apigatewayv2_integration.callback.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.signin.id}"
   route_key          = "GET /api_authorize/callback"
   authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_route" "success" {
+  api_id             = var.api_id
+  operation_name     = "ConnectRoute"
+  target             = "integrations/${aws_apigatewayv2_integration.signin.id}"
+  route_key          = "GET /api_authorize/success"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.oauth2.id
 }
 
 resource "aws_apigatewayv2_integration" "signin" {
@@ -237,17 +205,6 @@ resource "aws_apigatewayv2_integration" "signin" {
   description            = "Authorization startpoint"
   integration_method     = "POST"
   integration_uri        = aws_lambda_function.signin.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_integration" "callback" {
-  api_id                 = var.api_id
-  integration_type       = "AWS_PROXY"
-  credentials_arn        = aws_iam_role.iam_for_authorizer.arn
-  connection_type        = "INTERNET"
-  description            = "Authorization callback"
-  integration_method     = "POST"
-  integration_uri        = aws_lambda_function.callback.invoke_arn
   payload_format_version = "2.0"
 }
 

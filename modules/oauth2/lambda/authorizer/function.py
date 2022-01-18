@@ -29,7 +29,8 @@ def get_authorization_token(event) -> str:
 def lambda_handler(event, _context):
     issuer = os.environ['OAUTH2_ISSUER']
     audience = os.environ.get('OAUTH2_AUDIENCE')
-    required_scopes = set(os.environ.get('OAUTH2_SCOPE', '').split(' '))
+    scope = os.environ.get('OAUTH2_SCOPE', '')
+    required_scopes = set(scope.split(' '))
     try:
         tablename = os.environ['DYNAMODB_TABLE_NAME']
         dynamodb = boto3.resource('dynamodb')
@@ -75,7 +76,7 @@ def lambda_handler(event, _context):
 
         claim.validate()
 
-        if len(required_scopes) >= 0:
+        if scope != '':
             scope_value = claim.get('scope')
             logger.warn(scope_value)
             if scope_value is None:
